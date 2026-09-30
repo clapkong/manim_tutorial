@@ -4,80 +4,107 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Manim CE 실습</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,500;0,600;1,500&family=Nanum+Myeongjo:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: 왼쪽 목차 레일 + 가운데 읽기 칼럼(≈68ch). 빈칸 문제는 칼럼 폭을 쓰는 Manim 캔버스(검정) 패널.
-   색은 Manim 색 상수(BLUE_C, YELLOW_C, GREEN_C, RED_C, GOLD_C, TEAL_C)에서 가져온다. */
+/* Layout: 왼쪽 목차 레일 + 가운데 읽기 칼럼(60rem). 빈칸 문제는 GIF와 붙은 어두운 패널.
+   글꼴은 Pretendard 하나, 코드 강조는 GitHub 색(라이트/다크). */
 :root {
-  --bg: #f6f7f8;
-  --surface: #ffffff;
-  --fg: #1b1f24;
-  --muted: #5d6671;
-  --line: #dde1e6;
-  --accent: #1d7f9a;          /* BLUE_C를 밝은 바탕에서 읽히게 어둡게 */
-  --accent-soft: #e2f3f8;
-  --mark: #a87a0c;            /* YELLOW_C 계열, 밝은 바탕용 */
-  --ok: #3f8a2a;
-  --bad: #c63b30;
-  /* 코드 패널은 두 테마 모두 Manim 기본 캔버스(검정) */
-  --canvas: #0d0f12;
-  --canvas-2: #171a1f;
-  --canvas-line: #2a2f37;
-  --canvas-fg: #e8eaed;
-  --canvas-muted: #8a939e;
+  --bg: #fcfcfd;
+  --surface: #f3f4f6;          /* 목차 레일: 본문보다 한 단계 어두운 면 */
+  --fg: #14171c;
+  --muted: #4a525e;
+  --line: #dfe2e7;
+  --accent: #0a6a85;
+  --accent-soft: #e3f1f5;
+  --ok: #1a7f37;
+  --bad: #cf222e;
+  --inline-code: #eef0f3;
+
+  /* 일반 코드 블록: GitHub Light */
+  --code-bg: #f6f8fa;
+  --code-fg: #1f2328;
+  --code-line: #dfe2e7;
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-number: #0550ae;
+  --hl-title: #8250df;
+  --hl-builtin: #953800;
+  --hl-comment: #59636e;
+  --hl-attr: #0550ae;
+
+  /* 빈칸 패널: 두 테마 모두 어두운 면 (GIF의 검정 배경과 이어지게) */
+  --canvas: #0d1117;
+  --canvas-2: #161b22;
+  --canvas-line: #30363d;
+  --canvas-fg: #e6edf3;
+  --canvas-muted: #9198a1;
   --m-blue: #58c4dd;
   --m-yellow: #f7d96f;
-  --m-green: #83c167;
-  --m-red: #fc6255;
-  --m-gold: #f0ac5f;
-  --m-teal: #5cd0b3;
-  --m-purple: #b18cc4;
+  --m-green: #7ee787;
+  --m-red: #ff7b72;
+  --m-teal: #79c0ff;
 
-  --font-display: "STIX Two Text", "Nanum Myeongjo", "Times New Roman", serif;
-  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, "Pretendard Variable", monospace;
 
-  --step--1: 0.8125rem;
-  --step-0: 1rem;
-  --step-1: 1.1875rem;
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
   --step-2: 1.5rem;
-  --step-3: 2.125rem;
+  --step-3: 2rem;
   --radius: 6px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121418;
-    --surface: #1a1d22;
-    --fg: #e6e8eb;
-    --muted: #98a1ab;
-    --line: #2c3139;
-    --accent: #58c4dd;
-    --accent-soft: #16303a;
-    --mark: #f7d96f;
-    --ok: #83c167;
-    --bad: #fc6255;
-    --canvas: #08090b;
-    --canvas-2: #121418;
-    --canvas-line: #262b32;
+    --bg: #0f1216;
+    --surface: #161a20;
+    --fg: #e9ecef;
+    --muted: #a8b0ba;
+    --line: #2b3038;
+    --accent: #6cc6de;
+    --accent-soft: #15303a;
+    --ok: #7ee787;
+    --bad: #ff7b72;
+    --inline-code: #232830;
+    --code-bg: #161b22;
+    --code-fg: #e6edf3;
+    --code-line: #30363d;
+    --hl-keyword: #ff7b72;
+    --hl-string: #a5d6ff;
+    --hl-number: #79c0ff;
+    --hl-title: #d2a8ff;
+    --hl-builtin: #ffa657;
+    --hl-comment: #8b949e;
+    --hl-attr: #79c0ff;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #121418;
-  --surface: #1a1d22;
-  --fg: #e6e8eb;
-  --muted: #98a1ab;
-  --line: #2c3139;
-  --accent: #58c4dd;
-  --accent-soft: #16303a;
-  --mark: #f7d96f;
-  --ok: #83c167;
-  --bad: #fc6255;
-  --canvas: #08090b;
-  --canvas-2: #121418;
-  --canvas-line: #262b32;
+  --bg: #0f1216;
+  --surface: #161a20;
+  --fg: #e9ecef;
+  --muted: #a8b0ba;
+  --line: #2b3038;
+  --accent: #6cc6de;
+  --accent-soft: #15303a;
+  --ok: #7ee787;
+  --bad: #ff7b72;
+  --inline-code: #232830;
+  --code-bg: #161b22;
+  --code-fg: #e6edf3;
+  --code-line: #30363d;
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-title: #d2a8ff;
+  --hl-builtin: #ffa657;
+  --hl-comment: #8b949e;
+  --hl-attr: #79c0ff;
   color-scheme: dark;
 }
 
@@ -88,7 +115,10 @@ body {
   color: var(--fg);
   font-family: var(--font-body);
   font-size: var(--step-0);
-  line-height: 1.7;
+  line-height: 1.75;
+  letter-spacing: -0.005em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
 }
 [hidden] { display: none !important; }
@@ -115,8 +145,8 @@ a { color: var(--accent); text-underline-offset: 3px; }
   gap: 1.25rem;
 }
 .brand { display: flex; flex-direction: column; gap: 0.15rem; text-decoration: none; color: var(--fg); padding-inline: 0.5rem; }
-.brand-name { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; line-height: 1.1; }
-.brand-name i { color: var(--accent); font-style: italic; }
+.brand-name { font-family: var(--font-display); font-size: var(--step-1); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.brand-name i { color: var(--accent); font-style: normal; }
 .brand-sub { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); }
 
 .progress-total { padding-inline: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
@@ -167,20 +197,22 @@ a { color: var(--accent); text-underline-offset: 3px; }
 
 /* ── 본문 ─────────────────────────────── */
 main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-width: 0; }
-.doc { max-width: 46rem; margin: 0 auto; }
+.doc { max-width: 60rem; margin: 0 auto; }
 .doc h1 {
   font-family: var(--font-display);
   font-size: var(--step-3);
-  font-weight: 600;
-  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
   text-wrap: balance;
   margin: 0 0 1.25rem;
 }
 .doc h2 {
   font-family: var(--font-display);
   font-size: var(--step-2);
-  font-weight: 600;
-  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
   text-wrap: balance;
   margin: 3rem 0 0.75rem;
   padding-top: 1.25rem;
@@ -188,7 +220,11 @@ main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-w
 }
 .doc h3 { font-size: var(--step-1); font-weight: 600; margin: 2rem 0 0.5rem; text-wrap: balance; }
 .doc p, .doc ul, .doc ol { margin: 0 0 1rem; }
-.doc li + li { margin-top: 0.25rem; }
+.doc ul, .doc ol { padding-left: 1.4rem; }
+.doc li + li { margin-top: 0.3rem; }
+.doc li > ul { margin: 0.3rem 0 0; }
+.doc li > ul > li { color: var(--muted); }
+.doc li p { margin: 0; }
 .doc img {
   display: block; max-width: 100%; height: auto;
   border-radius: var(--radius);
@@ -197,32 +233,32 @@ main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-w
 }
 .doc blockquote {
   margin: 1.25rem 0; padding: 0.75rem 1rem;
-  border-left: 3px solid var(--mark);
   background: var(--surface);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: var(--radius);
   color: var(--fg);
 }
 .doc blockquote p:last-child { margin-bottom: 0; }
 .doc :not(pre) > code {
   font-family: var(--font-mono);
-  font-size: 0.875em;
-  background: var(--accent-soft);
+  font-size: 0.86em;
+  background: var(--inline-code);
   color: var(--fg);
-  padding: 0.1em 0.35em;
+  padding: 0.12em 0.38em;
   border-radius: 4px;
   overflow-wrap: anywhere;
 }
-.table-wrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.table-wrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
 .doc table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
 .doc th, .doc td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 .doc tr:last-child td { border-bottom: 0; }
-.doc th { font-weight: 600; font-size: var(--step--1); color: var(--muted); letter-spacing: 0.02em; }
+.doc th { font-weight: 600; font-size: var(--step--1); color: var(--muted); background: var(--surface); }
 
 /* 일반 코드 블록 */
 .doc pre {
   margin: 1.25rem 0;
-  background: var(--canvas);
-  color: var(--canvas-fg);
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-line);
   border-radius: var(--radius);
   padding: 1rem 1.1rem;
   overflow-x: auto;
@@ -232,19 +268,26 @@ main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-w
 }
 .doc pre code { font-family: inherit; background: none; padding: 0; color: inherit; }
 
-/* highlight.js 토큰: Manim 색 상수 */
-.hljs-keyword, .hljs-meta .hljs-keyword { color: var(--m-blue); }
-.hljs-string { color: var(--m-green); }
-.hljs-number, .hljs-literal { color: var(--m-gold); }
-.hljs-title, .hljs-title.class_, .hljs-title.function_ { color: var(--m-yellow); }
-.hljs-built_in { color: var(--m-teal); }
-.hljs-comment { color: var(--canvas-muted); font-style: italic; }
-.hljs-params { color: var(--canvas-fg); }
-.hljs-meta { color: var(--m-purple); }
-.hljs-attr, .hljs-variable { color: var(--m-red); }
+/* highlight.js 토큰: GitHub 색 */
+.hljs-keyword, .hljs-meta .hljs-keyword, .hljs-literal { color: var(--hl-keyword); }
+.hljs-string { color: var(--hl-string); }
+.hljs-number { color: var(--hl-number); }
+.hljs-title, .hljs-title.class_, .hljs-title.function_ { color: var(--hl-title); }
+.hljs-built_in { color: var(--hl-builtin); }
+.hljs-comment { color: var(--hl-comment); font-style: italic; }
+.hljs-params { color: inherit; }
+.hljs-meta { color: var(--hl-attr); }
+.hljs-attr, .hljs-variable { color: var(--hl-attr); }
 
 /* ── 빈칸 문제 ─────────────────────────────── */
 .ex {
+  --hl-keyword: #ff7b72;
+  --hl-string: #a5d6ff;
+  --hl-number: #79c0ff;
+  --hl-title: #d2a8ff;
+  --hl-builtin: #ffa657;
+  --hl-comment: #8b949e;
+  --hl-attr: #79c0ff;
   margin: 2rem 0;
   background: var(--canvas);
   color: var(--canvas-fg);
@@ -267,7 +310,7 @@ main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-w
 .ex-goal figcaption { font-family: var(--font-mono); font-size: 0.75rem; color: var(--canvas-muted); padding: 0.4rem 1.1rem; background: var(--canvas-2); }
 
 .doc .ex-code {
-  margin: 0; padding: 1rem 1.1rem; border-radius: 0;
+  margin: 0; padding: 1rem 1.1rem; border-radius: 0; border: 0;
   font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.75;
   overflow-x: auto; white-space: pre; tab-size: 4;
   background: var(--canvas);
@@ -370,7 +413,7 @@ dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: va
   <nav class="rail" id="rail" aria-label="챕터">
     <a class="brand" href="#README">
       <span class="brand-name">Manim <i>CE</i> 실습</span>
-      <span class="brand-sub">v0.21.0 · 읽고, 보고, 채우기</span>
+      <span class="brand-sub">v0.21.0 읽고, 보고, 채우기</span>
     </a>
     <div class="progress-total">
       <div class="progress-label"><span>빈칸 문제</span><span id="total-count">0 / 0</span></div>
@@ -405,7 +448,7 @@ dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: va
     { id: "README", num: "", title: "시작하기" },
     { id: "01_basics", num: "1", title: "Scene과 Mobject" },
     { id: "02_animations", num: "2", title: "애니메이션" },
-    { id: "03_text_math", num: "3", title: "텍스트·수식·코드" },
+    { id: "03_text_math", num: "3", title: "텍스트, 수식, 코드" },
     { id: "04_updaters", num: "4", title: "Updater와 ValueTracker" },
     { id: "05_plotting", num: "5", title: "좌표계와 그래프" },
     { id: "06_camera", num: "6", title: "카메라" },
@@ -504,12 +547,12 @@ dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: va
     el.innerHTML = `
       <div class="ex-head">
         <div>
-          <div class="ex-kicker">빈칸 채우기 · ${ex.answers.length}칸</div>
+          <div class="ex-kicker">빈칸 채우기 ${ex.answers.length}칸</div>
           <p class="ex-title">${escapeHtml(ex.title || "")}</p>
         </div>
         <span class="ex-state"></span>
       </div>
-      ${ex.gif ? `<figure class="ex-goal" style="margin:0"><img src="gifs/${ex.gif}.gif" alt="${escapeHtml(ex.gif)} 실행 결과" loading="lazy"><figcaption>목표 · ${escapeHtml(sceneName || ex.gif)}</figcaption></figure>` : ""}
+      ${ex.gif ? `<figure class="ex-goal" style="margin:0"><img src="gifs/${ex.gif}.gif" alt="${escapeHtml(ex.gif)} 실행 결과" loading="lazy"><figcaption>목표: ${escapeHtml(sceneName || ex.gif)}</figcaption></figure>` : ""}
       <pre class="ex-code"><code>${codeHtml}</code></pre>
       <div class="ex-actions">
         <button class="btn primary" type="button" data-act="check">채점</button>
@@ -519,14 +562,19 @@ dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: va
       </div>
       ${ex.hint ? `<div class="ex-hint" hidden>${escapeHtml(ex.hint)}</div>` : ""}
       <div class="ex-run" hidden>
-        <p>완성! 코드를 복사해서 저장소 폴더에 <code>practice.py</code>로 저장하고 실행해 보세요.</p>
-        <div class="cmd"><code>uv run manim -pql practice.py ${escapeHtml(sceneName || "")}</code><button class="btn" type="button" data-act="copy-cmd">복사</button></div>
+        <p>완성! 코드를 복사해서 저장소 최상위의 <code>practice.py</code>에 붙여 넣고, 저장소 폴더에서 아래 명령으로 렌더해 보세요.</p>
+        <div class="cmd"><code>manim -pql practice.py ${escapeHtml(sceneName || "")}</code><button class="btn" type="button" data-act="copy-cmd">복사</button></div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
           <button class="btn primary" type="button" data-act="copy-code">완성 코드 복사</button>
           ${file ? `<button class="btn" type="button" data-act="view-src">원본 파일 보기 (${escapeHtml(file)})</button>` : ""}
         </div>
       </div>`;
     host.replaceWith(el);
+
+    // md에는 GitHub에서도 보이도록 GIF 이미지가 따로 있다. 사이트에서는 문제 패널이 GIF를 보여 주니 중복을 숨긴다.
+    const prev = el.previousElementSibling;
+    const prevImg = prev && prev.tagName === "P" && prev.children.length === 1 && prev.querySelector("img");
+    if (ex.gif && prevImg && prevImg.getAttribute("src") === `gifs/${ex.gif}.gif` && !prev.textContent.trim()) prev.remove();
 
     const inputs = [...el.querySelectorAll(".blank")];
     const msg = $(".ex-msg", el);
@@ -710,7 +758,7 @@ dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: va
   // 모든 챕터를 미리 훑어 문제 수를 센다
   async function indexAll() {
     await Promise.all(CHAPTERS.map(async (c) => {
-      try { exerciseIndex[c.id] = scanExercises(await getMd(c.id)); } catch { exerciseIndex[c.id] = []; }
+      try { exerciseIndex[c.id] = c.id === "README" ? [] : scanExercises(await getMd(c.id)); } catch { exerciseIndex[c.id] = []; }
     }));
     updateProgress();
   }
