@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manim CE 실습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,500;0,600;1,500&family=Nanum+Myeongjo:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 왼쪽 목차 레일 + 가운데 읽기 칼럼(≈68ch). 빈칸 문제는 칼럼 폭을 쓰는 Manim 캔버스(검정) 패널.
+   색은 Manim 색 상수(BLUE_C, YELLOW_C, GREEN_C, RED_C, GOLD_C, TEAL_C)에서 가져온다. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #1b1f24;
+  --muted: #5d6671;
+  --line: #dde1e6;
+  --accent: #1d7f9a;          /* BLUE_C를 밝은 바탕에서 읽히게 어둡게 */
+  --accent-soft: #e2f3f8;
+  --mark: #a87a0c;            /* YELLOW_C 계열, 밝은 바탕용 */
+  --ok: #3f8a2a;
+  --bad: #c63b30;
+  /* 코드 패널은 두 테마 모두 Manim 기본 캔버스(검정) */
+  --canvas: #0d0f12;
+  --canvas-2: #171a1f;
+  --canvas-line: #2a2f37;
+  --canvas-fg: #e8eaed;
+  --canvas-muted: #8a939e;
+  --m-blue: #58c4dd;
+  --m-yellow: #f7d96f;
+  --m-green: #83c167;
+  --m-red: #fc6255;
+  --m-gold: #f0ac5f;
+  --m-teal: #5cd0b3;
+  --m-purple: #b18cc4;
+
+  --font-display: "STIX Two Text", "Nanum Myeongjo", "Times New Roman", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.5rem;
+  --step-3: 2.125rem;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121418;
+    --surface: #1a1d22;
+    --fg: #e6e8eb;
+    --muted: #98a1ab;
+    --line: #2c3139;
+    --accent: #58c4dd;
+    --accent-soft: #16303a;
+    --mark: #f7d96f;
+    --ok: #83c167;
+    --bad: #fc6255;
+    --canvas: #08090b;
+    --canvas-2: #121418;
+    --canvas-line: #262b32;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121418;
+  --surface: #1a1d22;
+  --fg: #e6e8eb;
+  --muted: #98a1ab;
+  --line: #2c3139;
+  --accent: #58c4dd;
+  --accent-soft: #16303a;
+  --mark: #f7d96f;
+  --ok: #83c167;
+  --bad: #fc6255;
+  --canvas: #08090b;
+  --canvas-2: #121418;
+  --canvas-line: #262b32;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── 전체 틀 ─────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+.rail {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  padding: 1.5rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.brand { display: flex; flex-direction: column; gap: 0.15rem; text-decoration: none; color: var(--fg); padding-inline: 0.5rem; }
+.brand-name { font-family: var(--font-display); font-size: var(--step-2); font-weight: 600; line-height: 1.1; }
+.brand-name i { color: var(--accent); font-style: italic; }
+.brand-sub { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); }
+
+.progress-total { padding-inline: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.progress-label { display: flex; justify-content: space-between; font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s ease; }
+
+.toc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.toc a {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--radius);
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+.toc a:hover { background: var(--accent-soft); }
+.toc a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.toc .num { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); }
+.toc .count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.toc .count.done { color: var(--ok); }
+
+.rail-foot { margin-top: auto; padding-inline: 0.5rem; font-size: var(--step--1); color: var(--muted); display: flex; flex-direction: column; gap: 0.5rem; }
+.rail-foot button { align-self: flex-start; }
+
+/* ── 모바일 ─────────────────────────────── */
+.topbar { display: none; }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail {
+    position: fixed; inset: 0 auto 0 0; width: min(20rem, 86vw); z-index: 20;
+    transform: translateX(-100%); transition: transform .2s ease;
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+  }
+  .rail.open { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); }
+  .topbar {
+    display: flex; align-items: center; gap: 0.75rem;
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    padding: 0.6rem 16px;
+  }
+  .topbar .brand-name { font-size: var(--step-1); }
+}
+
+/* ── 본문 ─────────────────────────────── */
+main { padding-block: 2.5rem 5rem; padding-inline: clamp(16px, 5vw, 4rem); min-width: 0; }
+.doc { max-width: 46rem; margin: 0 auto; }
+.doc h1 {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 600;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin: 0 0 1.25rem;
+}
+.doc h2 {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+  margin: 3rem 0 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+.doc h3 { font-size: var(--step-1); font-weight: 600; margin: 2rem 0 0.5rem; text-wrap: balance; }
+.doc p, .doc ul, .doc ol { margin: 0 0 1rem; }
+.doc li + li { margin-top: 0.25rem; }
+.doc img {
+  display: block; max-width: 100%; height: auto;
+  border-radius: var(--radius);
+  background: var(--canvas);
+  margin: 1.25rem 0;
+}
+.doc blockquote {
+  margin: 1.25rem 0; padding: 0.75rem 1rem;
+  border-left: 3px solid var(--mark);
+  background: var(--surface);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--fg);
+}
+.doc blockquote p:last-child { margin-bottom: 0; }
+.doc :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--accent-soft);
+  color: var(--fg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.table-wrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.doc table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+.doc th, .doc td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.doc tr:last-child td { border-bottom: 0; }
+.doc th { font-weight: 600; font-size: var(--step--1); color: var(--muted); letter-spacing: 0.02em; }
+
+/* 일반 코드 블록 */
+.doc pre {
+  margin: 1.25rem 0;
+  background: var(--canvas);
+  color: var(--canvas-fg);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.doc pre code { font-family: inherit; background: none; padding: 0; color: inherit; }
+
+/* highlight.js 토큰: Manim 색 상수 */
+.hljs-keyword, .hljs-meta .hljs-keyword { color: var(--m-blue); }
+.hljs-string { color: var(--m-green); }
+.hljs-number, .hljs-literal { color: var(--m-gold); }
+.hljs-title, .hljs-title.class_, .hljs-title.function_ { color: var(--m-yellow); }
+.hljs-built_in { color: var(--m-teal); }
+.hljs-comment { color: var(--canvas-muted); font-style: italic; }
+.hljs-params { color: var(--canvas-fg); }
+.hljs-meta { color: var(--m-purple); }
+.hljs-attr, .hljs-variable { color: var(--m-red); }
+
+/* ── 빈칸 문제 ─────────────────────────────── */
+.ex {
+  margin: 2rem 0;
+  background: var(--canvas);
+  color: var(--canvas-fg);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--canvas-line);
+}
+.ex-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem;
+  padding: 0.9rem 1.1rem 0.7rem;
+  border-bottom: 1px solid var(--canvas-line);
+}
+.ex-kicker { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-yellow); }
+.ex-title { font-weight: 600; font-size: var(--step-1); line-height: 1.35; margin: 0.1rem 0 0; }
+.ex-state { font-family: var(--font-mono); font-size: var(--step--1); color: var(--canvas-muted); font-variant-numeric: tabular-nums; }
+.ex-state.solved { color: var(--m-green); }
+
+.ex-goal { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--canvas-line); }
+.ex-goal img { width: 100%; max-width: 100%; height: auto; display: block; margin: 0; border-radius: 0; background: #000; }
+.ex-goal figcaption { font-family: var(--font-mono); font-size: 0.75rem; color: var(--canvas-muted); padding: 0.4rem 1.1rem; background: var(--canvas-2); }
+
+.doc .ex-code {
+  margin: 0; padding: 1rem 1.1rem; border-radius: 0;
+  font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.75;
+  overflow-x: auto; white-space: pre; tab-size: 4;
+  background: var(--canvas);
+  color: var(--canvas-fg);
+}
+.blank {
+  font: inherit;
+  color: var(--m-yellow);
+  background: var(--canvas-2);
+  border: 0;
+  border-bottom: 2px dashed var(--canvas-muted);
+  border-radius: 3px 3px 0 0;
+  padding: 0 0.2em;
+  min-width: 3ch;
+  outline: none;
+  transition: border-color .15s ease, background .15s ease;
+}
+.blank:focus { border-bottom-color: var(--m-blue); background: #1d2630; }
+.blank.ok { border-bottom: 2px solid var(--m-green); color: var(--m-green); }
+.blank.bad { border-bottom: 2px solid var(--m-red); color: var(--m-red); }
+
+.ex-actions {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--canvas-line);
+  background: var(--canvas-2);
+}
+.btn {
+  font: inherit; font-size: 0.875rem; font-weight: 500;
+  border-radius: var(--radius);
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  border: 1px solid var(--canvas-line);
+  background: transparent;
+  color: var(--canvas-fg);
+}
+.btn:hover { border-color: var(--canvas-muted); }
+.btn.primary { background: var(--m-blue); border-color: var(--m-blue); color: #06232b; font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.08); }
+.ex-msg { font-size: 0.875rem; color: var(--canvas-muted); margin-left: auto; }
+.ex-msg.ok { color: var(--m-green); }
+.ex-msg.bad { color: var(--m-red); }
+
+.ex-hint, .ex-run {
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--canvas-line);
+  font-size: 0.9375rem;
+  background: var(--canvas-2);
+}
+.ex-hint { color: var(--m-yellow); }
+.ex-hint::before { content: "힌트  "; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--canvas-muted); }
+.ex-run { display: flex; flex-direction: column; gap: 0.6rem; }
+.ex-run p { margin: 0; color: var(--canvas-fg); }
+.cmd {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--canvas); border: 1px solid var(--canvas-line); border-radius: var(--radius);
+  padding: 0.45rem 0.5rem 0.45rem 0.8rem;
+  font-family: var(--font-mono); font-size: 0.8125rem;
+  min-width: 0;
+}
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; color: var(--m-teal); }
+.cmd .btn { padding: 0.25rem 0.6rem; font-size: 0.8125rem; flex: none; }
+
+/* 챕터 이동 */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 4rem; }
+.pager a {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 0.8rem 1rem; text-decoration: none; color: var(--fg); background: var(--surface);
+}
+.pager a:hover { border-color: var(--accent); }
+.pager .dir { font-size: var(--step--1); color: var(--muted); }
+.pager .next { text-align: right; grid-column: 2; }
+
+/* 코드 보기 */
+dialog.code-view {
+  width: min(56rem, calc(100vw - 32px));
+  max-height: 85vh;
+  padding: 0; border: 1px solid var(--canvas-line); border-radius: 10px;
+  background: var(--canvas); color: var(--canvas-fg);
+}
+dialog.code-view::backdrop { background: rgba(0,0,0,.5); }
+.cv-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 1rem; border-bottom: 1px solid var(--canvas-line); font-family: var(--font-mono); font-size: var(--step--1); position: sticky; top: 0; background: var(--canvas); }
+dialog.code-view pre { margin: 0; padding: 1rem; overflow: auto; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.6; }
+
+.state-msg { color: var(--muted); padding: 2rem 0; }
+.state-msg code { font-family: var(--font-mono); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="btn" id="menu-btn" type="button" aria-label="목차 열기" style="color:var(--fg);border-color:var(--line)">목차</button>
+  <span class="brand-name">Manim <i>CE</i> 실습</span>
+</div>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="챕터">
+    <a class="brand" href="#README">
+      <span class="brand-name">Manim <i>CE</i> 실습</span>
+      <span class="brand-sub">v0.21.0 · 읽고, 보고, 채우기</span>
+    </a>
+    <div class="progress-total">
+      <div class="progress-label"><span>빈칸 문제</span><span id="total-count">0 / 0</span></div>
+      <div class="bar"><span id="total-bar"></span></div>
+    </div>
+    <ul class="toc" id="toc"></ul>
+    <div class="rail-foot">
+      <span>풀이 기록은 이 브라우저에만 저장됩니다.</span>
+      <button class="btn" id="reset-btn" type="button" style="color:var(--muted);border-color:var(--line)">기록 지우기</button>
+      <span id="reset-confirm" hidden>
+        정말 지울까요?
+        <button class="btn" id="reset-yes" type="button" style="color:var(--bad);border-color:var(--line)">지우기</button>
+        <button class="btn" id="reset-no" type="button" style="color:var(--muted);border-color:var(--line)">취소</button>
+      </span>
+    </div>
+  </nav>
+  <main>
+    <article class="doc" id="doc"><p class="state-msg">불러오는 중…</p></article>
+  </main>
+</div>
+
+<dialog class="code-view" id="code-view">
+  <div class="cv-head"><span id="cv-name"></span><button class="btn" id="cv-close" type="button">닫기</button></div>
+  <pre><code id="cv-code"></code></pre>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+(() => {
+  const CHAPTERS = [
+    { id: "README", num: "", title: "시작하기" },
+    { id: "01_basics", num: "1", title: "Scene과 Mobject" },
+    { id: "02_animations", num: "2", title: "애니메이션" },
+    { id: "03_text_math", num: "3", title: "텍스트·수식·코드" },
+    { id: "04_updaters", num: "4", title: "Updater와 ValueTracker" },
+    { id: "05_plotting", num: "5", title: "좌표계와 그래프" },
+    { id: "06_camera", num: "6", title: "카메라" },
+    { id: "07_3d", num: "7", title: "3D" },
+    { id: "08_structures", num: "8", title: "자료구조 시각화" },
+    { id: "09_advanced", num: "9", title: "고급 프로젝트" },
+    { id: "10_production", num: "10", title: "실제 영상 만들기" },
+  ];
+  const STORE_KEY = "manim-ce-practice:v1";
+  const $ = (s, el = document) => el.querySelector(s);
+
+  // ── 저장소 (실패해도 동작) ─────────────────
+  function loadSolved() {
+    try { return new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]")); } catch { return new Set(); }
+  }
+  function saveSolved() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify([...solved])); } catch {}
+  }
+  let solved = loadSolved();
+
+  // 챕터별 문제 id 목록 (모든 md를 한 번 훑어서 채운다)
+  const exerciseIndex = {};
+
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ── exercise 블록 파싱 ─────────────────────
+  // 형식:
+  //   id: ch01-hello
+  //   title: ...
+  //   scene: ch01_basics.py HelloManim
+  //   gif: HelloManim
+  //   hint: ...
+  //   ---
+  //   코드 (⟦정답⟧ 또는 ⟦정답|다른정답⟧)
+  function parseExercise(src) {
+    const cut = src.indexOf("\n---\n");
+    const head = cut >= 0 ? src.slice(0, cut) : "";
+    const body = cut >= 0 ? src.slice(cut + 5) : src;
+    const meta = {};
+    head.split("\n").forEach((line) => {
+      const m = line.match(/^(\w+):\s*(.*)$/);
+      if (m) meta[m[1]] = m[2].trim();
+    });
+    const answers = [];
+    const code = body.replace(/⟦(.+?)⟧/g, (_, a) => {
+      answers.push(a.split("|").map((x) => x.trim()));
+      return `__BLANK${answers.length - 1}__`;
+    });
+    return { ...meta, code, answers };
+  }
+
+  function scanExercises(md) {
+    const ids = [];
+    const re = /```exercise\n([\s\S]*?)```/g;
+    let m;
+    while ((m = re.exec(md))) {
+      const idm = m[1].match(/^id:\s*(.+)$/m);
+      if (idm) ids.push(idm[1].trim());
+    }
+    return ids;
+  }
+
+  // ── marked 설정 ─────────────────────────
+  let pendingExercises = [];
+  const renderer = new marked.Renderer();
+  renderer.code = function (a, b) {
+    const text = typeof a === "object" ? a.text : a;
+    const lang = ((typeof a === "object" ? a.lang : b) || "").trim();
+    if (lang === "exercise") {
+      pendingExercises.push(parseExercise(text));
+      return `<div data-ex="${pendingExercises.length - 1}"></div>`;
+    }
+    let html;
+    if (lang && hljs.getLanguage(lang)) html = hljs.highlight(text, { language: lang }).value;
+    else html = escapeHtml(text);
+    return `<pre><code class="hljs">${html}</code></pre>`;
+  };
+  marked.use({ renderer, gfm: true });
+
+  // ── 빈칸 문제 렌더 ─────────────────────────
+  const normalize = (s) => s.replace(/\s+/g, "").replace(/'/g, '"');
+
+  function mountExercise(host, ex, chapterId, index) {
+    const id = ex.id || `${chapterId}-${index}`;
+    const [file, sceneName] = (ex.scene || "").split(/\s+/);
+    const highlighted = hljs.highlight(ex.code, { language: "python" }).value;
+    const codeHtml = highlighted.replace(/__BLANK(\d+)__/g, (_, i) => {
+      const ans = ex.answers[+i];
+      const w = Math.max(3, Math.max(...ans.map((a) => a.length)) + 1);
+      return `<input class="blank" data-i="${i}" id="${id}-b${i}" aria-label="빈칸 ${+i + 1}" spellcheck="false" autocomplete="off" autocapitalize="off" style="width:${w}ch">`;
+    });
+
+    const el = document.createElement("section");
+    el.className = "ex";
+    el.id = id;
+    el.innerHTML = `
+      <div class="ex-head">
+        <div>
+          <div class="ex-kicker">빈칸 채우기 · ${ex.answers.length}칸</div>
+          <p class="ex-title">${escapeHtml(ex.title || "")}</p>
+        </div>
+        <span class="ex-state"></span>
+      </div>
+      ${ex.gif ? `<figure class="ex-goal" style="margin:0"><img src="gifs/${ex.gif}.gif" alt="${escapeHtml(ex.gif)} 실행 결과" loading="lazy"><figcaption>목표 · ${escapeHtml(sceneName || ex.gif)}</figcaption></figure>` : ""}
+      <pre class="ex-code"><code>${codeHtml}</code></pre>
+      <div class="ex-actions">
+        <button class="btn primary" type="button" data-act="check">채점</button>
+        ${ex.hint ? `<button class="btn" type="button" data-act="hint">힌트</button>` : ""}
+        <button class="btn" type="button" data-act="reveal">정답 보기</button>
+        <span class="ex-msg" role="status"></span>
+      </div>
+      ${ex.hint ? `<div class="ex-hint" hidden>${escapeHtml(ex.hint)}</div>` : ""}
+      <div class="ex-run" hidden>
+        <p>완성! 코드를 복사해서 저장소 폴더에 <code>practice.py</code>로 저장하고 실행해 보세요.</p>
+        <div class="cmd"><code>uv run manim -pql practice.py ${escapeHtml(sceneName || "")}</code><button class="btn" type="button" data-act="copy-cmd">복사</button></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn primary" type="button" data-act="copy-code">완성 코드 복사</button>
+          ${file ? `<button class="btn" type="button" data-act="view-src">원본 파일 보기 (${escapeHtml(file)})</button>` : ""}
+        </div>
+      </div>`;
+    host.replaceWith(el);
+
+    const inputs = [...el.querySelectorAll(".blank")];
+    const msg = $(".ex-msg", el);
+    const state = $(".ex-state", el);
+    const run = $(".ex-run", el);
+
+    function filledCode() {
+      return ex.code.replace(/__BLANK(\d+)__/g, (_, i) => inputs[+i].value.trim() || ex.answers[+i][0]);
+    }
+    function markSolved(on) {
+      state.textContent = on ? "풀었음" : "";
+      state.classList.toggle("solved", on);
+      run.hidden = !on;
+    }
+    function check() {
+      let right = 0;
+      inputs.forEach((inp, i) => {
+        const ok = ex.answers[i].some((a) => normalize(a) === normalize(inp.value));
+        inp.classList.toggle("ok", ok);
+        inp.classList.toggle("bad", !ok && inp.value.trim() !== "");
+        if (ok) right++;
+      });
+      const all = right === inputs.length;
+      msg.className = "ex-msg " + (all ? "ok" : "bad");
+      msg.textContent = all ? "모두 맞았어요" : `${right} / ${inputs.length} 맞음`;
+      if (all) {
+        solved.add(id); saveSolved(); updateProgress();
+        markSolved(true);
+      } else {
+        const firstWrong = inputs.find((inp) => !inp.classList.contains("ok"));
+        firstWrong && firstWrong.focus();
+      }
+    }
+
+    inputs.forEach((inp, i) => {
+      inp.addEventListener("input", () => {
+        inp.classList.remove("ok", "bad");
+        inp.style.width = Math.max(parseInt(inp.style.width), inp.value.length + 1) + "ch";
+      });
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (i < inputs.length - 1) inputs[i + 1].focus(); else check();
+        }
+      });
+    });
+
+    el.addEventListener("click", async (e) => {
+      const act = e.target.closest("[data-act]")?.dataset.act;
+      if (!act) return;
+      if (act === "check") check();
+      if (act === "hint") { const h = $(".ex-hint", el); h.hidden = !h.hidden; }
+      if (act === "reveal") {
+        inputs.forEach((inp, i) => { inp.value = ex.answers[i][0]; inp.classList.add("ok"); inp.classList.remove("bad"); inp.style.width = Math.max(3, inp.value.length + 1) + "ch"; });
+        msg.className = "ex-msg"; msg.textContent = "정답을 채웠어요. 한 번 읽어 보고 직접 다시 풀어 보세요.";
+        run.hidden = false;
+      }
+      if (act === "copy-code") copy(filledCode(), e.target);
+      if (act === "copy-cmd") copy($(".cmd code", el).textContent, e.target);
+      if (act === "view-src") openSource(file);
+    });
+
+    if (solved.has(id)) {
+      inputs.forEach((inp, i) => { inp.value = ex.answers[i][0]; inp.classList.add("ok"); inp.style.width = Math.max(3, inp.value.length + 1) + "ch"; });
+      markSolved(true);
+    }
+  }
+
+  async function copy(text, btn) {
+    const label = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "복사됨";
+    } catch {
+      // 클립보드가 막힌 환경: 코드 보기 창에 띄워서 직접 선택하게 한다
+      showCode("직접 선택해서 복사하세요", text);
+      btn.textContent = "선택해서 복사";
+    }
+    setTimeout(() => (btn.textContent = label), 1600);
+  }
+
+  // ── 원본 파일 보기 ─────────────────────────
+  const dlg = $("#code-view");
+  $("#cv-close").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  function showCode(name, text) {
+    $("#cv-name").textContent = name;
+    $("#cv-code").innerHTML = hljs.highlight(text, { language: "python" }).value;
+    if (!dlg.open) dlg.showModal();
+    const range = document.createRange();
+    range.selectNodeContents($("#cv-code"));
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  }
+  async function openSource(file) {
+    try {
+      const res = await fetch(`scenes/${file}`);
+      if (!res.ok) throw new Error(res.status);
+      showCode(`scenes/${file}`, await res.text());
+    } catch {
+      showCode(`scenes/${file}`, `# 파일을 불러오지 못했습니다.\n# 저장소의 scenes/${file} 를 직접 열어 보세요.`);
+    }
+  }
+
+  // ── 목차와 진행도 ─────────────────────────
+  function buildToc(current) {
+    $("#toc").innerHTML = CHAPTERS.map((c) => {
+      const ids = exerciseIndex[c.id] || [];
+      const done = ids.filter((x) => solved.has(x)).length;
+      const count = ids.length ? `<span class="count ${done === ids.length ? "done" : ""}">${done}/${ids.length}</span>` : "<span></span>";
+      return `<li><a href="#${c.id}" ${c.id === current ? 'aria-current="page"' : ""}><span class="num">${c.num}</span><span>${c.title}</span>${count}</a></li>`;
+    }).join("");
+  }
+  function updateProgress() {
+    const all = Object.values(exerciseIndex).flat();
+    const done = all.filter((x) => solved.has(x)).length;
+    $("#total-count").textContent = `${done} / ${all.length}`;
+    $("#total-bar").style.width = all.length ? (done / all.length) * 100 + "%" : "0";
+    buildToc(currentId());
+  }
+
+  // ── 라우팅 ─────────────────────────────
+  const mdCache = {};
+  async function getMd(id) {
+    if (!(id in mdCache)) {
+      const res = await fetch(`${id}.md`);
+      if (!res.ok) throw new Error(`${id}.md ${res.status}`);
+      mdCache[id] = await res.text();
+    }
+    return mdCache[id];
+  }
+  const currentId = () => {
+    const h = location.hash.slice(1);
+    return CHAPTERS.some((c) => c.id === h) ? h : "README";
+  };
+
+  async function render() {
+    const id = currentId();
+    const doc = $("#doc");
+    $("#rail").classList.remove("open");
+    buildToc(id);
+    let md;
+    try {
+      md = await getMd(id);
+    } catch {
+      doc.innerHTML = `<p class="state-msg">문서를 불러오지 못했습니다. 이 페이지는 로컬 서버로 열어야 합니다. 저장소 폴더에서 <code>uv run python -m http.server</code>를 실행하고 <code>http://localhost:8000</code>에 접속하세요.</p>`;
+      return;
+    }
+    pendingExercises = [];
+    doc.innerHTML = marked.parse(md);
+    const exs = pendingExercises;
+
+    // 표는 가로 스크롤 틀로 감싼다
+    doc.querySelectorAll("table").forEach((t) => {
+      const w = document.createElement("div"); w.className = "table-wrap";
+      t.replaceWith(w); w.appendChild(t);
+    });
+    // 링크: .md → 챕터 이동, scenes/*.py → 코드 보기, 외부 → 새 탭
+    doc.querySelectorAll("a[href]").forEach((a) => {
+      const href = a.getAttribute("href");
+      const md = href.match(/^([\w-]+)\.md$/);
+      if (md) { a.setAttribute("href", `#${md[1]}`); return; }
+      const py = href.match(/^scenes\/([\w.-]+\.py)$/);
+      if (py) { a.addEventListener("click", (e) => { e.preventDefault(); openSource(py[1]); }); return; }
+      if (/^https?:/.test(href)) { a.target = "_blank"; a.rel = "noopener"; }
+    });
+    doc.querySelectorAll("[data-ex]").forEach((host) => mountExercise(host, exs[+host.dataset.ex], id, +host.dataset.ex));
+
+    // 이전 / 다음
+    const i = CHAPTERS.findIndex((c) => c.id === id);
+    const prev = CHAPTERS[i - 1], next = CHAPTERS[i + 1];
+    const pager = document.createElement("nav");
+    pager.className = "pager";
+    pager.setAttribute("aria-label", "챕터 이동");
+    pager.innerHTML =
+      (prev ? `<a href="#${prev.id}"><span class="dir">이전</span><span>${prev.num ? prev.num + ". " : ""}${prev.title}</span></a>` : "") +
+      (next ? `<a class="next" href="#${next.id}"><span class="dir">다음</span><span>${next.num}. ${next.title}</span></a>` : "");
+    doc.appendChild(pager);
+    window.scrollTo(0, 0);
+  }
+
+  // 모든 챕터를 미리 훑어 문제 수를 센다
+  async function indexAll() {
+    await Promise.all(CHAPTERS.map(async (c) => {
+      try { exerciseIndex[c.id] = scanExercises(await getMd(c.id)); } catch { exerciseIndex[c.id] = []; }
+    }));
+    updateProgress();
+  }
+
+  $("#menu-btn").addEventListener("click", () => $("#rail").classList.toggle("open"));
+  $("#reset-btn").addEventListener("click", () => { $("#reset-confirm").hidden = false; $("#reset-btn").hidden = true; });
+  $("#reset-no").addEventListener("click", () => { $("#reset-confirm").hidden = true; $("#reset-btn").hidden = false; });
+  $("#reset-yes").addEventListener("click", () => {
+    solved = new Set(); saveSolved();
+    $("#reset-confirm").hidden = true; $("#reset-btn").hidden = false;
+    render(); updateProgress();
+  });
+  window.addEventListener("hashchange", render);
+  render().then(indexAll);
+})();
+</script>
+</body>
+</html>

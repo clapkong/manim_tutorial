@@ -1,0 +1,13 @@
+# Manim 렌더 결과물 (manim 실행 시 자동 생성)
+media/
+*.srt
+
+# Python
+__pycache__/
+*.py[oc]
+.venv/
+
+# OS / 에디터
+.DS_Store
+.vscode/
+.idea/

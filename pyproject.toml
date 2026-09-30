@@ -1,0 +1,9 @@
+[project]
+name = "manim-tutorial"
+version = "0.1.0"
+description = "Manim Community Edition 실습 튜토리얼"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "manim>=0.21.0",
+]
